@@ -26,3 +26,25 @@ export const setTrainerPkmn = (pkmnIds = [], trainerType) => dispatch => {
         trainerType
     });
 }
+
+export const dispatchMoveSelected = move => (dispatch) => {
+    dispatch({
+        type: 'SET_PKMN_NEXT_MOVE',
+        move,
+        trainerType: TRAINER_TYPES.PLAYER
+    });
+    dispatch(beginCombat());
+};
+
+export const beginCombat = () => (dispatch) => {
+    dispatch({
+        type: 'SET_PKMN_NEXT_MOVE',
+        // TODO: Add logic for opponent to decide its next move
+        move: { canonical: 'tackle', display: 'Tackle', power: 40 },
+        trainerType: TRAINER_TYPES.OPPONENT
+    });
+
+    dispatch({
+        type: 'BEGIN_COMBAT_PHASE'
+    })
+};
