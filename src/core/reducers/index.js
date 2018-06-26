@@ -1,9 +1,5 @@
 import { combineReducers } from 'redux';
-
-export const TRAINER_TYPES = {
-    PLAYER: 'player',
-    OPPONENT: 'opponent'
-};
+import { STAT_TYPES, TRAINER_TYPES } from '../../constants';
 
 const DEFAULT_TRAINER_STATE = {
     pkmn: [],
@@ -11,22 +7,25 @@ const DEFAULT_TRAINER_STATE = {
     name: ''
 };
 
+const { ATK, DEF, SPATK, SPDEF, SPD, HP } = STAT_TYPES;
+
 const mockBaseStats = {
-    attack: 10,
-    defense: 10,
-    spAtk: 10,
-    spDef: 10,
-    speed: 10
+    [ATK]: 6,
+    [DEF]: 6,
+    [SPATK]: 6,
+    [SPDEF]: 6,
+    [SPD]: 6,
+    [HP]: 12
 };
 
 const mockPkmnDatabase = {
-    1: { name: 'Bulbasaur', id: 1, mockBaseStats: { ...mockBaseStats, speed: 12 }},
+    1: { name: 'Bulbasaur', id: 1, mockBaseStats: { ...mockBaseStats, [SPD]: 12 }},
     2: { name: 'Ivysaur', id: 2, mockBaseStats },
     3: { name: 'Venusaur', id: 3, mockBaseStats }
 };
 
-const mockMoveDatabase = {
-    1: { canonical: 'tackle', display: 'Tackle', power: 40}
+export const mockMoveDatabase = {
+    'tackle': { canonical: 'tackle', display: 'Tackle', power: 40, type: STAT_TYPES.ATK, compareToType: STAT_TYPES.DEF, direct: true }
 };
 
 const createNewPkmn = (pkmn) => {
@@ -36,7 +35,9 @@ const createNewPkmn = (pkmn) => {
             ...pkmn.mockBaseStats,
             priority: 0
         },
-        moveSet: [mockMoveDatabase[1]],
+        level: 5,
+        moveSet: [mockMoveDatabase['tackle']],
+        isFainted: false,
         nextMove: '',
         uuid: createUniqueId()
     };
@@ -50,6 +51,8 @@ const getPkmnFromDatabase = id => { return { ...mockPkmnDatabase[id] } };
 const createUniqueId = () => ('_' + Math.random().toString(36).substr(2, 9));
 
 const trainers = (state = {}, action) => {
+    let activePkmn, updatedState;
+
     switch (action.type) {
         /**
          * TODO: Initialize name, pkmn, items, etc with this as well
@@ -60,7 +63,7 @@ const trainers = (state = {}, action) => {
                 opponent: { ...DEFAULT_TRAINER_STATE}
             };
         case 'SET_TRAINER_NAME':
-            const updatedState = { ...state };
+            updatedState = { ...state };
             updatedState[action.trainerType].name = action.name;
             return updatedState;
         case 'SET_TRAINER_PKMN':
@@ -74,7 +77,7 @@ const trainers = (state = {}, action) => {
                 }
             }}
         case 'SET_PKMN_NEXT_MOVE':
-            const activePkmn = { ...state[action.trainerType].pkmn[0] };
+            activePkmn = { ...state[action.trainerType].pkmn[0] };
             activePkmn.nextMove = action.move;
             return {
                 ...state,
@@ -83,6 +86,30 @@ const trainers = (state = {}, action) => {
                     pkmn: [activePkmn]
                 }
             };
+        case 'REDUCE_HP':
+            activePkmn = { ...state[action.trainerType].pkmn[0] };
+
+            if (activePkmn.stats.hp > 0) {
+                activePkmn.stats.hp = activePkmn.stats.hp - action.damage;
+            }
+
+            if (activePkmn.stats.hp < 0) {
+                activePkmn.stats.hp = 0;
+            }
+
+            return {
+                ...state,
+                [action.trainerType]: {
+                    ...state[action.trainerType],
+                    pkmn: [activePkmn]
+                }
+            };
+        case 'END_COMBAT_PHASE':
+            updatedState = { ...state };
+            updatedState[TRAINER_TYPES.PLAYER].pkmn[0].nextMove = {};
+            updatedState[TRAINER_TYPES.OPPONENT].pkmn[0].nextMove = {};
+            return updatedState;
+            
         default:
             return state;
     }

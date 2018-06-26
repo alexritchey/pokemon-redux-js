@@ -7,8 +7,9 @@ import { createLogger } from 'redux-logger';
 import thunk from 'redux-thunk';
 import { Provider } from 'react-redux';
 import Root from './App';
-import coreReducers, { TRAINER_TYPES } from './core/reducers/index.js';
+import coreReducers from './core/reducers/index.js';
 import * as coreActions from './core/actions/index.js';
+import { TRAINER_TYPES } from './constants.js';
 
 const reducers = coreReducers;
 const logger = createLogger();

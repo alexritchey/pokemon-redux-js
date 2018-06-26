@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import './App.css';
 import { dispatchMoveSelected } from './core/actions';
+import { getIsCombatPhase } from './core/reducers/selectors';
 
 class App extends Component {
     constructor(props, context) {
@@ -14,11 +15,14 @@ class App extends Component {
         return (
             <div className="App">
                 <p>{`${player.name} sends out ${player.activePkmn.data.name}`}</p>
+                <p><strong>{`${player.activePkmn.stats.hp} HP`}</strong></p>
+                <br/>
                 {player.activePkmn.moveSet.map((move) => {
                     return (
                         <button
                             onClick={() => this.props.dispatchMoveSelected(move)}
                             key={move.canonical}
+                            disabled={this.props.isCombatPhase}
                         >
                             {move.display}
                         </button>
@@ -26,6 +30,7 @@ class App extends Component {
                 })}
 
                 <p>{`${opponent.name} sends out ${opponent.activePkmn.data.name}`}</p>
+                <strong>{`${opponent.activePkmn.stats.hp} HP`}</strong>
             </div>
         );
     }
@@ -35,6 +40,7 @@ const mapStateToProps = state => {
     const { player, opponent } = state.trainers;
 
     return {
+        isCombatPhase: getIsCombatPhase(state),
         player: {
             ...player,
             activePkmn: player.pkmn[0]
