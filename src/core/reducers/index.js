@@ -1,6 +1,7 @@
 import { combineReducers } from 'redux';
 import { STAT_TYPES, TRAINER_TYPES } from '../../constants';
 import moves from '../../data/moves';
+import pokedex from '../../data/pokedex';
 
 const DEFAULT_TRAINER_STATE = {
     pkmn: [],
@@ -19,30 +20,26 @@ const mockBaseStats = {
     [HP]: 12
 };
 
-const mockPkmnDatabase = {
-    1: { name: 'Bulbasaur', id: 1, mockBaseStats: { ...mockBaseStats, [SPD]: 12 }},
-    2: { name: 'Ivysaur', id: 2, mockBaseStats },
-    3: { name: 'Venusaur', id: 3, mockBaseStats }
-};
-
 export const mockMoveDatabase = { tackle: moves['tackle'] };
 
 const createNewPkmn = (pkmn) => {
     return {
         data: pkmn,
         stats: {
-            ...pkmn.mockBaseStats,
+            ...pkmn.baseStats,
             priority: 0
         },
-        level: 5,
+        level: 50,
         moveSet: [mockMoveDatabase['tackle']],
         isFainted: false,
         nextMove: '',
+        evasion: 100,
+        accuracy: 100,
         uuid: createUniqueId()
     };
 };
 
-const getPkmnFromDatabase = id => ({ ...mockPkmnDatabase[id] });
+const getPkmnFromDatabase = id => ({ ...pokedex[id] });
 
 /**
  * TODO: Should check that ID doesn't already exist

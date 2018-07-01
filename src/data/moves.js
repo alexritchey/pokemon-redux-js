@@ -17012,7 +17012,7 @@ export default {
 	},
 	"tackle": {
 		num: 33,
-		accuracy: 100,
+		accuracy: 80,
 		basePower: 40,
 		category: "Physical",
 		desc: "No additional effect.",

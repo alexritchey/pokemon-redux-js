@@ -1,6 +1,6 @@
 import { TRAINER_TYPES } from '../../constants.js';
 import { getPlayerActivePkmn, getOpponentActivePkmn } from '../reducers/selectors';
-import { calculateDirectDamage } from '../../calculators.js';
+import { calculateDirectDamage, calculateHitOrMissChance } from '../../calculators.js';
 import { mockMoveDatabase } from '../reducers/index.js';
 
 // Core Actions
@@ -77,13 +77,25 @@ const beginPlayerTurn = (playerActivePkmn, opponentActivePkmn, isFirst) => (disp
     let damageToDeal = 0;
 
     if(!playerActivePkmn.isFainted) {
-        damageToDeal = calculateDirectDamage(playerActivePkmn, opponentActivePkmn);
+        const { nextMove, accuracy } = playerActivePkmn;
+        const { evasion } = opponentActivePkmn;
 
-        if (damageToDeal) {
+        const finalAccuracy = calculateHitOrMissChance(nextMove.accuracy, accuracy, evasion);
+
+        if ((Math.random() * 100) < finalAccuracy) {
+            damageToDeal = calculateDirectDamage(playerActivePkmn, opponentActivePkmn);
+
+            if (damageToDeal) {
+                dispatch({
+                    type: 'REDUCE_HP',
+                    damage: damageToDeal,
+                    trainerType: TRAINER_TYPES.PLAYER
+                });
+            }
+        } else {
             dispatch({
-                type: 'REDUCE_HP',
-                damage: damageToDeal,
-                trainerType: TRAINER_TYPES.OPPONENT
+                type: 'ATTACK_MISSED',
+                trainerType: TRAINER_TYPES.PLAYER
             });
         }
     }
@@ -92,15 +104,26 @@ const beginPlayerTurn = (playerActivePkmn, opponentActivePkmn, isFirst) => (disp
 const beginOpponentTurn = (playerActivePkmn, opponentActivePkmn, isFirst) => (dispatch, getState) => {
     let damageToDeal = 0;
 
-    // TODO: Extract this out into another function, copy pasta from above for now
-    if(!opponentActivePkmn.isFainted) {
-        damageToDeal = calculateDirectDamage(opponentActivePkmn, playerActivePkmn);
+    if(!playerActivePkmn.isFainted) {
+        const { nextMove, accuracy } = opponentActivePkmn;
+        const { evasion } = playerActivePkmn;
 
-        if (damageToDeal) {
+        const finalAccuracy = calculateHitOrMissChance(nextMove.accuracy, accuracy, evasion);
+        
+        if ((Math.random() * 100) < finalAccuracy) {
+            damageToDeal = calculateDirectDamage(opponentActivePkmn, playerActivePkmn);
+
+            if (damageToDeal) {
+                dispatch({
+                    type: 'REDUCE_HP',
+                    damage: damageToDeal,
+                    trainerType: TRAINER_TYPES.OPPONENT
+                });
+            }
+        } else {
             dispatch({
-                type: 'REDUCE_HP',
-                damage: damageToDeal,
-                trainerType: TRAINER_TYPES.PLAYER
+                type: 'ATTACK_MISSED',
+                trainerType: TRAINER_TYPES.OPPONENT
             });
         }
     }

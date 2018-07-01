@@ -1,3 +1,10 @@
+/**
+ * 0 = Normal
+ * 1 = Super Effective
+ * 2 = Not Very Effective
+ * 3 = No Effect
+ */
+
 export default {
 	"Bug": {
 		damageTaken: {

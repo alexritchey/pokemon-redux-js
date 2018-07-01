@@ -19,8 +19,8 @@ const initialState = {};
 const store = createStore(reducers, initialState, applyMiddleware(thunk, logger));
 
 store.dispatch(coreActions.dispatchInitialSetup());
-store.dispatch(coreActions.setTrainerPkmn([3], TRAINER_TYPES.PLAYER));
-store.dispatch(coreActions.setTrainerPkmn([1], TRAINER_TYPES.OPPONENT));
+store.dispatch(coreActions.setTrainerPkmn(['bulbasaur'], TRAINER_TYPES.PLAYER));
+store.dispatch(coreActions.setTrainerPkmn(['charmander'], TRAINER_TYPES.OPPONENT));
 
 ReactDOM.render(
     <Provider store={store}>

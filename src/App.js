@@ -14,7 +14,7 @@ class App extends Component {
 
         return (
             <div className="App">
-                <p>{`${player.name} sends out ${player.activePkmn.data.name}`}</p>
+                <p>{`${player.name} sends out ${player.activePkmn.data.species}`}</p>
                 <p><strong>{`${player.activePkmn.stats.hp} HP`}</strong></p>
                 <br/>
                 {player.activePkmn.moveSet.map((move) => {
@@ -29,7 +29,7 @@ class App extends Component {
                     );
                 })}
 
-                <p>{`${opponent.name} sends out ${opponent.activePkmn.data.name}`}</p>
+                <p>{`${opponent.name} sends out ${opponent.activePkmn.data.species}`}</p>
                 <strong>{`${opponent.activePkmn.stats.hp} HP`}</strong>
             </div>
         );
