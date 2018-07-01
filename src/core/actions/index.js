@@ -58,13 +58,13 @@ export const beginCombat = () => (dispatch, getState) => {
     const firstTurn = playerHasPriority ? beginPlayerTurn : beginOpponentTurn;
     const secondTurn = !playerHasPriority ? beginPlayerTurn : beginOpponentTurn;
 
-    dispatch(firstTurn(playerActivePkmn, opponentActivePkmn, false));
+    dispatch(firstTurn(playerActivePkmn, opponentActivePkmn, true));
 
     state = getState();
     playerActivePkmn = getPlayerActivePkmn(state);
     opponentActivePkmn = getOpponentActivePkmn(state);
 
-    dispatch(secondTurn(playerActivePkmn, opponentActivePkmn, true));
+    dispatch(secondTurn(playerActivePkmn, opponentActivePkmn, false));
 
     // dispatch(calculateResults());
     dispatch({
@@ -77,20 +77,15 @@ const beginPlayerTurn = (playerActivePkmn, opponentActivePkmn, isFirst) => (disp
     let damageToDeal = 0;
 
     if(!playerActivePkmn.isFainted) {
-        const move = playerActivePkmn.nextMove;
-        if (move.direct) {
-            damageToDeal = calculateDirectDamage(playerActivePkmn, opponentActivePkmn);
-        } else {
-            damageToDeal = null;
-        }
-    }
+        damageToDeal = calculateDirectDamage(playerActivePkmn, opponentActivePkmn);
 
-    if (damageToDeal !== null) {
-        dispatch({
-            type: 'REDUCE_HP',
-            damage: damageToDeal,
-            trainerType: TRAINER_TYPES.OPPONENT
-        });
+        if (damageToDeal) {
+            dispatch({
+                type: 'REDUCE_HP',
+                damage: damageToDeal,
+                trainerType: TRAINER_TYPES.OPPONENT
+            });
+        }
     }
 };
 
@@ -99,26 +94,17 @@ const beginOpponentTurn = (playerActivePkmn, opponentActivePkmn, isFirst) => (di
 
     // TODO: Extract this out into another function, copy pasta from above for now
     if(!opponentActivePkmn.isFainted) {
-        const move = opponentActivePkmn.nextMove;
-        if (move.direct) {
-            damageToDeal = calculateDirectDamage(opponentActivePkmn, playerActivePkmn);
-        } else {
-            damageToDeal = null;
+        damageToDeal = calculateDirectDamage(opponentActivePkmn, playerActivePkmn);
+
+        if (damageToDeal) {
+            dispatch({
+                type: 'REDUCE_HP',
+                damage: damageToDeal,
+                trainerType: TRAINER_TYPES.PLAYER
+            });
         }
     }
-
-    if (damageToDeal !== null) {
-        dispatch({
-            type: 'REDUCE_HP',
-            damage: damageToDeal,
-            trainerType: TRAINER_TYPES.PLAYER
-        });
-    }
 };
-
-const calculateResults = () => {};
-
-
 
 const pkmnHasPriorityGreaterThan = (playerPkmn, opponentPkmn) => {
     let playerPriority = 0;

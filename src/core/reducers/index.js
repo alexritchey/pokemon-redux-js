@@ -1,5 +1,6 @@
 import { combineReducers } from 'redux';
 import { STAT_TYPES, TRAINER_TYPES } from '../../constants';
+import moves from '../../data/moves';
 
 const DEFAULT_TRAINER_STATE = {
     pkmn: [],
@@ -24,9 +25,7 @@ const mockPkmnDatabase = {
     3: { name: 'Venusaur', id: 3, mockBaseStats }
 };
 
-export const mockMoveDatabase = {
-    'tackle': { canonical: 'tackle', display: 'Tackle', power: 40, type: STAT_TYPES.ATK, compareToType: STAT_TYPES.DEF, direct: true }
-};
+export const mockMoveDatabase = { tackle: moves['tackle'] };
 
 const createNewPkmn = (pkmn) => {
     return {
@@ -43,7 +42,7 @@ const createNewPkmn = (pkmn) => {
     };
 };
 
-const getPkmnFromDatabase = id => { return { ...mockPkmnDatabase[id] } };
+const getPkmnFromDatabase = id => ({ ...mockPkmnDatabase[id] });
 
 /**
  * TODO: Should check that ID doesn't already exist

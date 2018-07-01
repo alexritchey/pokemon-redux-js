@@ -24,7 +24,7 @@ class App extends Component {
                             key={move.canonical}
                             disabled={this.props.isCombatPhase}
                         >
-                            {move.display}
+                            {move.name}
                         </button>
                     );
                 })}

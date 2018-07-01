@@ -11,3 +11,8 @@ export const TRAINER_TYPES = {
     PLAYER: 'player',
     OPPONENT: 'opponent'
 };
+
+export const CATEGORY_TYPES = {
+    PHYSICAL: 'Physical',
+    SPECIAL: 'Special'
+};
