@@ -54,17 +54,13 @@ export const beginCombat = () => (dispatch, getState) => {
     let playerActivePkmn = getPlayerActivePkmn(state);
     let opponentActivePkmn = getOpponentActivePkmn(state);
 
-    const playerHasPriority = pkmnHasPriorityGreaterThan(playerActivePkmn, opponentActivePkmn);
-    const firstTurn = playerHasPriority ? beginPlayerTurn : beginOpponentTurn;
-    const secondTurn = !playerHasPriority ? beginPlayerTurn : beginOpponentTurn;
-
-    dispatch(firstTurn(playerActivePkmn, opponentActivePkmn, true));
+    dispatch(beginTurn(playerActivePkmn, opponentActivePkmn, true));
 
     state = getState();
     playerActivePkmn = getPlayerActivePkmn(state);
     opponentActivePkmn = getOpponentActivePkmn(state);
 
-    dispatch(secondTurn(playerActivePkmn, opponentActivePkmn, false));
+    dispatch(beginTurn(playerActivePkmn, opponentActivePkmn, false));
 
     // dispatch(calculateResults());
     dispatch({
@@ -72,71 +68,54 @@ export const beginCombat = () => (dispatch, getState) => {
     })
 };
 
+const beginTurn = (playerActivePkmn, opponentActivePkmn, isFirstTurn) => (dispatch) => {
+    if(!playerActivePkmn.isFainted && !opponentActivePkmn.isFainted) {
+        let pkmnWithPriority = getPkmnWithPriority(playerActivePkmn, opponentActivePkmn);
+        let pkmnWithoutPriority = pkmnWithPriority.trainer === playerActivePkmn.trainer ?
+            opponentActivePkmn :
+            playerActivePkmn;
 
-const beginPlayerTurn = (playerActivePkmn, opponentActivePkmn, isFirst) => (dispatch, getState) => {
-    let damageToDeal = 0;
+        let attackingPkmn, defendingPkmn;
 
-    if(!playerActivePkmn.isFainted) {
-        const { nextMove, accuracy } = playerActivePkmn;
-        const { evasion } = opponentActivePkmn;
+        if (isFirstTurn) {
+            attackingPkmn = pkmnWithPriority;
+            defendingPkmn = pkmnWithoutPriority;
+        } else {
+            attackingPkmn = pkmnWithoutPriority;
+            defendingPkmn = pkmnWithPriority;
+        }
+        let damageToDeal = 0;
+
+        const { nextMove, accuracy } = attackingPkmn;
+        const { evasion } = defendingPkmn;
 
         const finalAccuracy = calculateHitOrMissChance(nextMove.accuracy, accuracy, evasion);
 
         if ((Math.random() * 100) < finalAccuracy) {
-            damageToDeal = calculateDirectDamage(playerActivePkmn, opponentActivePkmn);
+            damageToDeal = calculateDirectDamage(attackingPkmn, defendingPkmn);
 
-            if (damageToDeal) {
+            if (damageToDeal !== null) {
                 dispatch({
                     type: 'REDUCE_HP',
                     damage: damageToDeal,
-                    trainerType: TRAINER_TYPES.PLAYER
+                    trainerType: defendingPkmn.trainer
                 });
             }
         } else {
             dispatch({
-                type: 'ATTACK_MISSED',
-                trainerType: TRAINER_TYPES.PLAYER
+                type: 'ATTACK_MISSED'
             });
         }
     }
 };
 
-const beginOpponentTurn = (playerActivePkmn, opponentActivePkmn, isFirst) => (dispatch, getState) => {
-    let damageToDeal = 0;
+const getPkmnWithPriority = (pkmnA, pkmnB) => {
+    let pkmnWithPriority;
 
-    if(!playerActivePkmn.isFainted) {
-        const { nextMove, accuracy } = opponentActivePkmn;
-        const { evasion } = playerActivePkmn;
-
-        const finalAccuracy = calculateHitOrMissChance(nextMove.accuracy, accuracy, evasion);
-        
-        if ((Math.random() * 100) < finalAccuracy) {
-            damageToDeal = calculateDirectDamage(opponentActivePkmn, playerActivePkmn);
-
-            if (damageToDeal) {
-                dispatch({
-                    type: 'REDUCE_HP',
-                    damage: damageToDeal,
-                    trainerType: TRAINER_TYPES.OPPONENT
-                });
-            }
-        } else {
-            dispatch({
-                type: 'ATTACK_MISSED',
-                trainerType: TRAINER_TYPES.OPPONENT
-            });
-        }
-    }
-};
-
-const pkmnHasPriorityGreaterThan = (playerPkmn, opponentPkmn) => {
-    let playerPriority = 0;
-    let opponentPriority = 0;
-
-    if(playerPkmn.stats.spd > opponentPkmn.stats.spd) {
-        playerPriority++;
+    if(pkmnA.stats.spe > pkmnB.stats.spe) {
+        pkmnWithPriority = pkmnA;
     } else {
-        opponentPriority++;
+        pkmnWithPriority = pkmnB;
     }
 
     /**
@@ -145,5 +124,5 @@ const pkmnHasPriorityGreaterThan = (playerPkmn, opponentPkmn) => {
      * Moves like Quick Attack that always get priority
      */
 
-     return playerPriority > opponentPriority;
+     return pkmnWithPriority;
 };

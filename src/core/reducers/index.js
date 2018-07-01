@@ -22,7 +22,7 @@ const mockBaseStats = {
 
 export const mockMoveDatabase = { tackle: moves['tackle'] };
 
-const createNewPkmn = (pkmn) => {
+const createNewPkmn = (pkmn, trainerType) => {
     return {
         data: pkmn,
         stats: {
@@ -35,6 +35,7 @@ const createNewPkmn = (pkmn) => {
         nextMove: '',
         evasion: 100,
         accuracy: 100,
+        trainer: trainerType,
         uuid: createUniqueId()
     };
 };
@@ -64,7 +65,7 @@ const trainers = (state = {}, action) => {
             return updatedState;
         case 'SET_TRAINER_PKMN':
             const pkmnList = action.pkmnIds.map(pkmnId => {
-                return createNewPkmn(getPkmnFromDatabase(pkmnId));
+                return createNewPkmn(getPkmnFromDatabase(pkmnId), action.trainerType);
             });
             return { ...state, ...{
                 [action.trainerType]: {
